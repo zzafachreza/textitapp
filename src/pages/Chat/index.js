@@ -58,6 +58,88 @@ export default function Chat({ navigation, route }) {
         return String.fromCharCode(char ^ key)
     }
 
+    // rumus baru
+
+    var abc = [];
+    var letters;
+    const encTEXT = (plaintext, kunci) => {
+        var sum = [];
+        var enc = [];
+        var inpu;
+        letters = new Array("A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z", " ");
+        var chavi;
+        var inp = plaintext;
+        var input = inp.toUpperCase();
+        var length = input.length;
+        var k = kunci;
+        var key = k.toUpperCase();
+        var kleng = key.length;
+        if (kleng != length) {
+            console.log("The length of key should be same as the length of text you entered😅");
+
+        }
+        for (var i = 0; i < length; i++) {
+
+            inpu = letters.indexOf(input[i]);
+            chavi = letters.indexOf(key[i]);
+            sum[i] = inpu + chavi;
+            if (sum[i] >= 26) {
+                sum[i] = sum[i] % 26;
+            }
+
+        }
+
+        for (var j = 0; j < length; j++) {
+            enc[j] = letters[sum[j]];
+            abc[j] = sum[j];
+
+        }
+        var encr = enc.toString();
+        var encrypt = encr.split(",").join("");
+        return encrypt;
+    }
+    const decTEXT = (cipher, kunci) => {
+
+        var letters = new Array("A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z", " ");
+        var arr = [];
+        var dec = [];
+        var ent = cipher;
+        console.log(cipher)
+        var enter = ent.toUpperCase();
+        var s = kunci.toUpperCase();
+        var len = s.length;
+        for (var k = 0; k < len; k++) {
+            var xyz = letters.indexOf(s[k]);
+            arr[k] = abc[k] - xyz
+            if (arr[k] < 0) {
+                arr[k] += 26;
+            }
+        }
+        for (var m = 0; m < len; m++) {
+            dec[m] = letters[arr[m]];
+        }
+        var decr = dec.toString();
+        return decr.split(",").join("");
+
+    }
+
+    console.log('decode', decTEXT('MRX', 'UNI'));
+
+
+    const buatKunci = (length) => {
+        let result = '';
+        const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+        const charactersLength = characters.length;
+        let counter = 0;
+        while (counter < length) {
+            result += characters.charAt(Math.floor(Math.random() * charactersLength));
+            counter += 1;
+        }
+        return result;
+    }
+
+
+
     const [lawan, setLawan] = useState(route.params);
     const scrollViewRef = useRef();
     const [user, setUser] = useState({})
@@ -72,19 +154,23 @@ export default function Chat({ navigation, route }) {
             Alert.alert(MYAPP, 'Your message is empty !')
         } else {
 
-            const VC = encrypt(kirim.pesan);
+            const KC = buatKunci(kirim.pesan.length);
+            const VC = encTEXT(kirim.pesan, KC);
+
+
+
             setKirim({
                 ...kirim,
-                kunci: VC[0],
-                cipher: VC[1]
+                kunci: KC,
+                cipher: VC
             })
 
             console.log('send server', {
                 fid_user: kirim.fid_user,
                 fid_lawan: kirim.fid_lawan,
                 pesan: kirim.pesan,
-                kunci: VC[0],
-                cipher: VC[1]
+                kunci: KC,
+                cipher: VC
             })
 
 
@@ -92,8 +178,8 @@ export default function Chat({ navigation, route }) {
                 fid_user: kirim.fid_user,
                 fid_lawan: kirim.fid_lawan,
                 pesan: kirim.pesan,
-                kunci: VC[0],
-                cipher: VC[1]
+                kunci: KC,
+                cipher: VC
             }).then(res => {
                 console.log(res.data);
                 getTransaction();
@@ -231,7 +317,7 @@ export default function Chat({ navigation, route }) {
                     </View>
                     {data.map(item => {
 
-                        let decodePesan = decrypt(item.kunci, item.cipher)
+                        let decodePesan = item.pesan
 
                         return (
                             <View style={{
@@ -257,7 +343,7 @@ export default function Chat({ navigation, route }) {
                                     fontFamily: fonts.secondary[400],
                                     color: colors.black,
                                     fontSize: windowWidth / 25
-                                }}>{decodePesan}</Text>
+                                }}>{decodePesan} </Text>
                                 <View>
                                     <Text style={{
                                         textAlign: 'right',
